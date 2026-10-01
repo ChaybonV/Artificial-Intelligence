@@ -16,74 +16,71 @@ namespace MiniMax
  
         public int SmartPlayer()
         {
-            int bestScore = int.MinValue;
-            int bestPosition = -1;
-
-            foreach (int position in EmptyPlaces())
+            // TODO
+            //return NaivePlayer();
+            int best = Int32.MinValue;
+            int bestposition = -1;
+            foreach(int position in EmptyPlaces())
             {
                 DoMove(position, 'X');
-
                 int score = MinMax(false);
-
                 UndoMove(position);
-
-                if (score > bestScore)
+                if (score > best)
                 {
-                    bestScore = score;
-                    bestPosition = position;
+                    best = score;
+                    bestposition = position;
                 }
             }
+            return bestposition;
 
-            return bestPosition;
+
         }
-
+ 
         private int MinMax(bool isMax)
         {
-            int score = Score();
-
-            // Eindtoestand
-            if (score == 10 || score == -10)
-                return score;
-
-            if (Full())
-                return 0;
-
+            /* functie minimax(knoop, diepte, isMAX):
+                als diepte = 0 of knoop is terminaal:
+                    geef score(knoop) terug
+                als isMAX:
+                    beste = -∞
+                    voor elk kind van knoop:
+                    beste = max(beste, minimax(kind, diepte-1, ONWAAR))
+                    geef beste terug
+                anders:
+                    beste = +∞
+                    voor elk kind van knoop:
+                    beste = min(beste, minimax(kind, diepte-1, WAAR))
+                    geef beste terug*/
+            if (Wins('X')) return +1;
+            if (Wins('O')) return -1;
+            if (Full()) return 0;
+            
             if (isMax)
             {
-                int bestScore = int.MinValue;
-
-                foreach (int position in EmptyPlaces())
+                int best = Int32.MinValue;
+                foreach(int position in EmptyPlaces())
                 {
                     DoMove(position, 'X');
-
-                    int currentScore = MinMax(false);
-
+                    int score = MinMax(false);
                     UndoMove(position);
-
-                    bestScore = Math.Max(bestScore, currentScore);
+                    best = Math.Max(best, score);
                 }
-
-                return bestScore;
+                return best;
             }
             else
             {
-                int bestScore = int.MaxValue;
-
-                foreach (int position in EmptyPlaces())
+                int best = Int32.MaxValue;
+                foreach(int position in EmptyPlaces())
                 {
                     DoMove(position, 'O');
-
-                    int currentScore = MinMax(true);
-
+                    int score = MinMax(true);
                     UndoMove(position);
-
-                    bestScore = Math.Min(bestScore, currentScore);
+                    best = Math.Min(best, score);
                 }
-
-                return bestScore;
+                return best;
             }
         }
-
+ 
         private int Score()
         {
             if (Wins('X')) return 10;
