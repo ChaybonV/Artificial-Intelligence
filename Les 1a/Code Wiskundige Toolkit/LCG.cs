@@ -1,4 +1,4 @@
-﻿class LCG{
+class LCG{
     long a = 214013;
     long m = (long)Math.Pow(2,31);
     long c = 2531011;
