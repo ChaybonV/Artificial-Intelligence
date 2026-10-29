@@ -1,11 +1,6 @@
 // Les 6 – Decision Trees (cursus H6, p. 49-53)
 // STARTCODE – vul blok 1, 2 en 3 aan. Test telkens met Program.cs.
 
-using System.Reflection.Emit;
-using System.Security.AccessControl;
-using System.Security.Authentication;
-using Microsoft.VisualBasic;
-
 public class DecisionTree
 {
     public string[] FeatureNames { get; }
@@ -122,8 +117,6 @@ public class DecisionTree
         // 3  knip de groep in twee met Split
         // 4  geef een knoop terug met FeatureIndex, FeatureThreshold,
         //    Left = Build(links, depth + 1) en Right = Build(rechts, depth + 1)
-
-        //return new Node { Label = MostFrequent(data) };   // tijdelijk: de boom is één blad
     }
 
     public string Predict(double[] x) => Predict(Root!, x);
@@ -131,13 +124,11 @@ public class DecisionTree
     private string Predict(Node node, double[] x)
     {
         // Stappen:
-        if (node.IsLeaf) return node.Label;
-        else if (x[node.FeatureIndex] <= node.FeatureThreshold) return Predict(node.Left,x);
-        else return Predict(node.Right, x);
-
         // 1  is node een blad? Geef het label terug
         // 2  anders: x[node.FeatureIndex] <= node.FeatureThreshold?  ->  ga links, anders rechts
-        //return "?";
+        if (node.IsLeaf) return node.Label!;
+        else if (x[node.FeatureIndex] <= node.FeatureThreshold) return Predict(node.Left!, x);
+        else return Predict(node.Right!, x);
     }
 
     // =====================================================================
