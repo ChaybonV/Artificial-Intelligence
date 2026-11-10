@@ -30,7 +30,10 @@ public class MatrixFactorization
         // 1  start met som = 0
         // 2  voor elke factor k: som += u[k] · v[k]
         // 3  geef de som terug
-        return 0;
+        double som = 0;
+        for (int k = 0; k < u.Length; k++)
+            som += u[k] * v[k];
+        return som;
     }
 
     // =====================================================================
@@ -46,7 +49,15 @@ public class MatrixFactorization
         // 3  voor elke factor k:  u[k] = u[k] + alpha · fout · v[k]
         //                         v[k] = v[k] + alpha · fout · (de OUDE u[k])
         // 4  geef de fout terug
-        return 0;
+        double voorspelling = Predict(u, v);
+        double fout = rating - voorspelling;
+        for (int k = 0; k < u.Length; k++)
+        {
+            double oudeU = u[k];
+            u[k] = u[k] + alpha * fout * v[k];
+            v[k] = v[k] + alpha * fout * oudeU;
+        }
+        return fout;
     }
 
     // =====================================================================
@@ -60,7 +71,14 @@ public class MatrixFactorization
         // 1  per rating: fout = echt − voorspeld, tel fout² op
         // 2  deel door het aantal ratings (MSE)
         // 3  geef de vierkantswortel terug: Math.Sqrt(...)
-        return 0;
+        double somKwadraten = 0;
+        for (int i = 0; i < echt.Length; i++)
+        {
+            double fout = echt[i] - voorspeld[i];
+            somKwadraten += fout * fout;
+        }
+        double mse = somKwadraten / echt.Length;
+        return Math.Sqrt(mse);
     }
 
     // Pseudocode: cursus p. 70-71
@@ -71,6 +89,13 @@ public class MatrixFactorization
         // 2    voor elke gebruiker g en elke film f (Ratings.GetLength(0) en (1))
         // 3      lege cel (Ratings[g, f] == 0)? Sla over: daar train je niet op
         // 4      anders: UpdateStep(GebruikerFactoren[g], ItemFactoren[f], Ratings[g, f], alpha)
+        for (int it = 0; it < iteraties; it++)
+            for (int g = 0; g < Ratings.GetLength(0); g++)
+                for (int f = 0; f < Ratings.GetLength(1); f++)
+                {
+                    if (Ratings[g, f] == 0) continue;
+                    UpdateStep(GebruikerFactoren[g], ItemFactoren[f], Ratings[g, f], alpha);
+                }
     }
 
     // =====================================================================

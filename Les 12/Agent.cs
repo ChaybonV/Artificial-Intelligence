@@ -37,6 +37,16 @@ public static class Agent
         // 1  voor elke herinnering i: score = Cosine(vraag, geheugen[i])
         // 2  is score > hoogste? onthoud score en i
         // 3  geef de positie van de beste terug
+        double hoogste = double.NegativeInfinity;
+        for (int i = 0; i < geheugen.Count; i++)
+        {
+            double score = Cosine(vraag, geheugen[i]);
+            if (score > hoogste)
+            {
+                hoogste = score;
+                beste = i;
+            }
+        }
         return beste;
     }
 
@@ -52,7 +62,19 @@ public static class Agent
         // 2  voor elke tool t: score = Cosine(v, Embed(t.Beschrijving))
         // 3  onthoud de tool met de hoogste score (zelfde patroon als HaalOp)
         // 4  geef (beste tool, hoogste score) terug
-        return (tools[0], 0);
+        double[] v = Embed(vraag);
+        Tool besteTool = tools[0];
+        double hoogste = double.NegativeInfinity;
+        foreach (Tool t in tools)
+        {
+            double score = Cosine(v, Embed(t.Beschrijving));
+            if (score > hoogste)
+            {
+                hoogste = score;
+                besteTool = t;
+            }
+        }
+        return (besteTool, hoogste);
     }
 
     // =====================================================================
@@ -69,7 +91,20 @@ public static class Agent
         // 3    Learn: resultaat niet null?  log "Learn  gelukt: ..." en geef (resultaat, poging) terug
         //             anders                log "Learn  mislukt, plan aanpassen en opnieuw"
         // 4  na de lus: log "Stop   maximum bereikt: vraag het aan een mens" en geef (null, maxPogingen) terug
-        return (null, 0);
+        for (int poging = 1; poging <= maxPogingen; poging++)
+        {
+            log.Add($"Act    poging {poging}");
+            string? resultaat = tool(poging);
+
+            if (resultaat != null)
+            {
+                log.Add($"Learn  gelukt: {resultaat}");
+                return (resultaat, poging);
+            }
+            log.Add("Learn  mislukt, plan aanpassen en opnieuw");
+        }
+        log.Add("Stop   maximum bereikt: vraag het aan een mens");
+        return (null, maxPogingen);
     }
 
     // =====================================================================

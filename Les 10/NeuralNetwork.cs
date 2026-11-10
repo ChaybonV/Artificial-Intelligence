@@ -44,7 +44,7 @@ public class NeuralNetwork
         // Stappen:
         // 1  bereken e^(−z) met Math.Exp(-z)
         // 2  geef 1 / (1 + dat getal) terug  (let op de haakjes)
-        return 0;
+        return 1 / (1 + Math.Exp(-z));
     }
 
     // z = b + Σ w[i] · x[i], dan door de sigmoid (= Logistic Regression uit les 7)
@@ -54,7 +54,10 @@ public class NeuralNetwork
         // 1  start met z = b
         // 2  voor elke input i: z += w[i] · x[i]
         // 3  geef Sigmoid(z) terug
-        return 0;
+        double z = b;
+        for (int i = 0; i < x.Length; i++)
+            z += w[i] * x[i];
+        return Sigmoid(z);
     }
 
     // =====================================================================
@@ -68,6 +71,8 @@ public class NeuralNetwork
         // Stappen:
         // 1  voor elk neuron j van de laag (w.Length neuronen):
         // 2    uitvoer[j] = Neuron(x, w[j], b[j])
+        for (int j = 0; j < w.Length; j++)
+            uitvoer[j] = Neuron(x, w[j], b[j]);
         return uitvoer;
     }
 
@@ -78,7 +83,9 @@ public class NeuralNetwork
         // 1  verborgen = Laag(x, W1, B1)
         // 2  output = Neuron(verborgen, W2, B2)
         // 3  geef (output, verborgen) terug
-        return (0, new double[W2.Length]);
+        double[] verborgen = Laag(x, W1, B1);
+        double output = Neuron(verborgen, W2, B2);
+        return (output, verborgen);
     }
 
     // Verlies = ½ · (target − output)²
@@ -87,7 +94,8 @@ public class NeuralNetwork
         // Stappen:
         // 1  fout = target − output
         // 2  geef 0.5 · fout · fout terug
-        return 0;
+        double fout = target - output;
+        return 0.5 * fout * fout;
     }
 
     // =====================================================================
@@ -106,7 +114,24 @@ public class NeuralNetwork
         // 4  laag 2: W2[j] += eta · gradientOutput · verborgen[j]   en   B2 += eta · gradientOutput
         // 5  laag 1: W1[j][i] += eta · gradientVerborgen[j] · x[i]   en   B1[j] += eta · gradientVerborgen[j]
         // 6  geef gradientOutput terug
-        return 0;
+        var (output, verborgen) = Forward(x);
+        double gradientOutput = (target - output) * SigmoidAfgeleide(output);
+
+        double[] gradientVerborgen = new double[W2.Length];
+        for (int j = 0; j < W2.Length; j++)
+            gradientVerborgen[j] = gradientOutput * W2[j] * SigmoidAfgeleide(verborgen[j]);
+
+        for (int j = 0; j < W2.Length; j++)
+            W2[j] += eta * gradientOutput * verborgen[j];
+        B2 += eta * gradientOutput;
+
+        for (int j = 0; j < W1.Length; j++)
+        {
+            for (int i = 0; i < x.Length; i++)
+                W1[j][i] += eta * gradientVerborgen[j] * x[i];
+            B1[j] += eta * gradientVerborgen[j];
+        }
+        return gradientOutput;
     }
 
     // =====================================================================

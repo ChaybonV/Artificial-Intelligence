@@ -27,7 +27,10 @@ public class LogisticRegression
         // 1  start met z = Bias
         // 2  voor elk kenmerk i: tel Weights[i] · x[i] op bij z
         // 3  geef z terug
-        return 0;
+        double z = Bias;
+        for (int i = 0; i < Weights.Length; i++)
+            z += Weights[i] * x[i];
+        return z;
     }
 
     // =====================================================================
@@ -40,7 +43,7 @@ public class LogisticRegression
         // Stappen:
         // 1  e^(−z) schrijf je in C# als Math.Exp(-z)
         // 2  geef 1 / (1 + e^(−z)) terug
-        return 0;
+        return 1 / (1 + Math.Exp(-z));
     }
 
     public double VoorspelKans(double[] x)
@@ -48,7 +51,8 @@ public class LogisticRegression
         // Stappen:
         // 1  bereken z met GewogenSom(x)
         // 2  geef Sigmoid(z) terug
-        return 0;
+        double z = GewogenSom(x);
+        return Sigmoid(z);
     }
 
     public int Voorspel(double[] x)
@@ -56,7 +60,8 @@ public class LogisticRegression
         // Stappen:
         // 1  bereken de kans met VoorspelKans(x)
         // 2  kans >= 0.5?  ->  1, anders 0
-        return 0;
+        double kans = VoorspelKans(x);
+        return kans >= 0.5 ? 1 : 0;
     }
 
     // =====================================================================
@@ -70,6 +75,10 @@ public class LogisticRegression
         // 1  fout = VoorspelKans(x) − label
         // 2  voor elk kenmerk i: Weights[i] = Weights[i] − leerSnelheid · fout · x[i]
         // 3  Bias = Bias − leerSnelheid · fout
+        double fout = VoorspelKans(x) - label;
+        for (int i = 0; i < Weights.Length; i++)
+            Weights[i] = Weights[i] - leerSnelheid * fout * x[i];
+        Bias = Bias - leerSnelheid * fout;
     }
 
     public void Train(List<Sample> data, double leerSnelheid, int aantalStappen)
@@ -77,6 +86,9 @@ public class LogisticRegression
         // Stappen:
         // 1  herhaal aantalStappen keer:
         // 2      voor elk voorbeeld s in data: TrainStap(s.Features, s.Label, leerSnelheid)
+        for (int stap = 0; stap < aantalStappen; stap++)
+            foreach (Sample s in data)
+                TrainStap(s.Features, s.Label, leerSnelheid);
     }
 
     // =====================================================================

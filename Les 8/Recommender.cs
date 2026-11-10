@@ -18,6 +18,9 @@ public static class Recommender
         // 1  loop over alle films (index i)
         // 2  hebben u én v film i beoordeeld (allebei niet 0)? voeg i toe aan films
         // 3  geef films terug
+        for (int i = 0; i < u.Length; i++)
+            if (u[i] != 0 && v[i] != 0)
+                films.Add(i);
         return films;
     }
 
@@ -32,7 +35,17 @@ public static class Recommender
         // 1  films = CoRated(u, v); geen enkele film gemeen? geef 0 terug
         // 2  per film in films: tel u·v, u² en v² op (zoals CosineAlles hieronder)
         // 3  geef dot / (√ som u² · √ som v²) terug
-        return 0;
+        List<int> films = CoRated(u, v);
+        if (films.Count == 0) return 0;
+
+        double dot = 0, kwadratenU = 0, kwadratenV = 0;
+        foreach (int i in films)
+        {
+            dot += u[i] * v[i];
+            kwadratenU += u[i] * u[i];
+            kwadratenV += v[i] * v[i];
+        }
+        return dot / (Math.Sqrt(kwadratenU) * Math.Sqrt(kwadratenV));
     }
 
     // =====================================================================

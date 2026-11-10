@@ -34,7 +34,14 @@ public class Taalmodel
         // 1  product = 0, normA = 0, normB = 0
         // 2  voor elke dimensie i: product += a[i]·b[i], normA += a[i]², normB += b[i]²
         // 3  geef product / (√normA · √normB) terug
-        return 0;
+        double product = 0, normA = 0, normB = 0;
+        for (int i = 0; i < a.Length; i++)
+        {
+            product += a[i] * b[i];
+            normA += a[i] * a[i];
+            normB += b[i] * b[i];
+        }
+        return product / (Math.Sqrt(normA) * Math.Sqrt(normB));
     }
 
     // =====================================================================
@@ -49,6 +56,14 @@ public class Taalmodel
         // 1  blaas elke score op: uit[i] = Math.Exp(scores[i] / temperatuur)
         // 2  tel alles op
         // 3  deel elke uit[i] door die som
+        double som = 0;
+        for (int i = 0; i < scores.Length; i++)
+        {
+            uit[i] = Math.Exp(scores[i] / temperatuur);
+            som += uit[i];
+        }
+        for (int i = 0; i < uit.Length; i++)
+            uit[i] /= som;
         return uit;
     }
 
@@ -63,6 +78,7 @@ public class Taalmodel
         // Stappen:
         // 1  de positie van de letter: letter − 'a'  ('a' → 0, 'b' → 1, ...)
         // 2  zet daar een 1
+        v[letter - 'a'] = 1;
         return v;
     }
 
@@ -73,7 +89,9 @@ public class Taalmodel
         // 1  input = OneHot(letter)
         // 2  emb = MaalMatrix(input, Embedding)
         // 3  geef MaalMatrix(emb, Output) terug
-        return new double[AantalLetters];
+        double[] input = OneHot(letter);
+        double[] emb = MaalMatrix(input, Embedding);
+        return MaalMatrix(emb, Output);
     }
 
     // Eén trainstap op het paar (huidige letter → volgende letter). Pseudocode: cursus p. 87.
@@ -87,6 +105,27 @@ public class Taalmodel
         //    (doe dit VÓÓR je Output aanpast: je hebt de oude gewichten nodig)
         // 4  laag 2: Output[j, k] += eta · fout[k] · emb[j]
         // 5  laag 1: Embedding[i, j] += eta · gradientEmb[j] · input[i]
+        double[] input = OneHot(huidige);
+        double[] emb = MaalMatrix(input, Embedding);
+        double[] voorspelling = MaalMatrix(emb, Output);
+
+        double[] doel = OneHot(volgende);
+        double[] fout = new double[AantalLetters];
+        for (int k = 0; k < AantalLetters; k++)
+            fout[k] = doel[k] - voorspelling[k];
+
+        double[] gradientEmb = new double[EmbeddingGrootte];
+        for (int j = 0; j < EmbeddingGrootte; j++)
+            for (int k = 0; k < AantalLetters; k++)
+                gradientEmb[j] += fout[k] * Output[j, k];
+
+        for (int j = 0; j < EmbeddingGrootte; j++)
+            for (int k = 0; k < AantalLetters; k++)
+                Output[j, k] += eta * fout[k] * emb[j];
+
+        for (int i = 0; i < AantalLetters; i++)
+            for (int j = 0; j < EmbeddingGrootte; j++)
+                Embedding[i, j] += eta * gradientEmb[j] * input[i];
     }
 
     // =====================================================================
